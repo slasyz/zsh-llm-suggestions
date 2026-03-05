@@ -33,9 +33,9 @@ llm keys set openai
 llm -m gpt-5.2 "write me a poem about cats"
 ```
 
-If you want to use a different provider, different model, or even a local one, you can configure llm accordingly (probably, by adding a custom model to [`extra-openai-models.yaml`](https://llm.datasette.io/en/stable/other-models.html) file or installing a plugin from the [plugin directory](https://llm.datasette.io/en/stable/plugins/directory.html)) and setting model name as described in [Configuration](#configuration) block below.
+If you want to use a different provider, model, or even a local one, configure `llm` accordingly (for example, by adding a custom model in [`extra-openai-models.yaml`](https://llm.datasette.io/en/stable/other-models.html) or installing a plugin from the [plugin directory](https://llm.datasette.io/en/stable/plugins/directory.html)), then set the model name as described in the [Configuration](#configuration) section below.
 
-In this case, be sure that your model returns output in correct format (one command per line, no formatting). To check this, you can run the debug command (with optional `-m` flag to specify model, it will be passed to llm as is) to see what does it return with the default system prompt:
+In this case, make sure your model returns output in the correct format (one command per line, no formatting). To check this, run the debug command (the optional `-m` flag passes the model name to `llm` as-is) to see what it returns with the default system prompt (this command appears only after you install the plugin):
 ```shell
 zsh-llm-suggestions-debug -m openrouter/google/gemini-3-flash-preview "show datetime with ms"
 ```
