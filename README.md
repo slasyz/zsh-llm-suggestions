@@ -11,12 +11,7 @@ Tiny Zsh plugin that opens a prompt, asks an LLM for shell command suggestions, 
 - **gum**: https://github.com/charmbracelet/gum
 - **fzf**: https://github.com/junegunn/fzf
 
-
-## Install
-
-### Prerequisites
-
-Install [gum](https://github.com/charmbracelet/gum) and [fzf](https://github.com/junegunn/fzf), for example, on macOS:
+Install [gum](https://github.com/charmbracelet/gum) and [fzf](https://github.com/junegunn/fzf), for example, on macOS you can do this:
 ```shell
 brew install gum fzf
 ```
@@ -30,11 +25,22 @@ fzf --version
 llm --version
 ```
 
-And set API key for llm and verify it, for example:
-```
+### Configure LLM provider (cloud or local)
+
+To use OpenAI, just set the API key for llm and verify it, for example, like this:
+```shell
 llm keys set openai
-llm -m gpt-5.2 "do you work?"
+llm -m gpt-5.2 "write me a poem about cats"
 ```
+
+If you want to use a different provider, different model, or even a local one, you can configure llm accordingly (probably, by adding a custom model to [`extra-openai-models.yaml`](https://llm.datasette.io/en/stable/other-models.html) file or installing a plugin from the [plugin directory](https://llm.datasette.io/en/stable/plugins/directory.html)) and setting model name as described in [Configuration](#configuration) block below.
+
+In this case, be sure that your model returns output in correct format (one command per line, no formatting). To check this, you can run the debug command (with optional `-m` flag to specify model, it will be passed to llm as is) to see what does it return with the default system prompt:
+```shell
+zsh-llm-suggestions-debug -m openrouter/google/gemini-3-flash-preview "show datetime with ms"
+```
+
+## Install
 
 ### oh-my-zsh
 
