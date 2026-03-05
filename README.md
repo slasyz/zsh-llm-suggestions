@@ -27,7 +27,7 @@ Verify that they are available in your PATH:
 ```shell
 gum -v
 fzf --version
-llm -v
+llm --version
 ```
 
 And set API key for llm and verify it, for example:
