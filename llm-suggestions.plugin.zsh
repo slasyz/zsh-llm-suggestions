@@ -4,6 +4,10 @@
 zstyle -s ':llm-suggestions:' model LLM_SUGGESTIONS_MODEL
 zstyle -s ':llm-suggestions:' bindkey LLM_SUGGESTIONS_BINDKEY
 
+# Guard against empty style/env values so bindkey always receives a sequence.
+[[ -n "${LLM_SUGGESTIONS_MODEL//[[:space:]]/}" ]] || LLM_SUGGESTIONS_MODEL="gpt-5.2"
+[[ -n "${LLM_SUGGESTIONS_BINDKEY//[[:space:]]/}" ]] || LLM_SUGGESTIONS_BINDKEY="^X^X"
+
 _llm_cmd_pick_widget() {
     emulate -L zsh
     setopt localoptions pipefail nomonitor
