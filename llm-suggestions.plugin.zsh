@@ -24,6 +24,7 @@ _llm_cmd_pick_widget() {
     fi
 
     local input chosen prompt_status choice_status system_prompt
+    local llm_stderr llm_error_line
 
     # Ask for the LLM prompt in a TUI writer.
     input="$(
@@ -54,18 +55,35 @@ _llm_cmd_pick_widget() {
         No formatting, no numbers, every line — separate command.
         If user asks specific number of choices, do as they say. Otherwise, write reasonable amount, for example, 5.
         Prefer simplest and most straightforwards solutions, use Python or other languages only if they fit better than standard shell tools."
+    llm_stderr="$(mktemp "${TMPDIR:-/tmp}/llm-suggestions.XXXXXX")" || {
+        zle -M "failed to create temporary file"
+        zle redisplay
+        return 1
+    }
+
     chosen="$(
-        llm -m "$LLM_SUGGESTIONS_MODEL" -s "$system_prompt" "$input" \
-        | fzf \
+        fzf \
             --header "Pick Command" \
             --wrap \
             --layout=reverse \
-            --border
+            --border \
+            < <(
+                llm -m "$LLM_SUGGESTIONS_MODEL" -s "$system_prompt" "$input" \
+                    2>"$llm_stderr"
+            )
     )"
     choice_status=$?
+    if [[ -s "$llm_stderr" ]]; then
+        llm_error_line="${${(@f)$(<"$llm_stderr")}[1]}"
+    fi
+    rm -f "$llm_stderr"
     if (( choice_status != 0 )); then
         if (( choice_status != 130 )); then
-            zle -M "fzf failed (exit $choice_status)"
+            if [[ -n "$llm_error_line" && "$llm_error_line" != *"Broken pipe"* && "$llm_error_line" != *"[Errno 32]"* ]]; then
+                zle -M "llm failed: $llm_error_line"
+            else
+                zle -M "fzf failed (exit $choice_status)"
+            fi
             zle redisplay
             return 1
         fi
