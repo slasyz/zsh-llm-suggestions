@@ -30,7 +30,7 @@ llm --version
 To use OpenAI, just set the API key for llm and verify it, for example, like this:
 ```shell
 llm keys set openai
-llm -m gpt-5.2 "write me a poem about cats"
+llm -m gpt-5.4 "write me a poem about cats"
 ```
 
 If you want to use a different provider, model, or even a local one, configure `llm` accordingly (for example, by adding a custom model in [`extra-openai-models.yaml`](https://llm.datasette.io/en/stable/other-models.html) or installing a plugin from the [plugin directory](https://llm.datasette.io/en/stable/plugins/directory.html)), then set the model name as described in the [Configuration](#configuration) section below.
@@ -105,16 +105,28 @@ Press it in your shell, type what you want, pick a generated command, then run/e
 
 Add this before loading the plugin.
 
-### Environment variables
+### Shell variables
 
 ```shell
-export LLM_SUGGESTIONS_MODEL="gpt-5.2"
+export LLM_SUGGESTIONS_MODEL="gpt-5.4"
 export LLM_SUGGESTIONS_BINDKEY="^X^X"
+
+# Optional: If you want to pass custom options to the `llm` command, 
+# for example, to select a preferred provider:
+typeset -ga LLM_SUGGESTIONS_LLM_ARGS=(
+  -o provider '{"order":["fireworks"],"allow_fallbacks":true}'
+  -o reasoning_enabled false
+)
 ```
+
+`LLM_SUGGESTIONS_LLM_ARGS` is a zsh array. Each item is passed to `llm` as a separate argument.
 
 ### zstyle
 
 ```shell
-zstyle ':llm-suggestions:' model gpt-5.2
+zstyle ':llm-suggestions:' model gpt-5.4
 zstyle ':llm-suggestions:' bindkey '^X^X'
+
+# Optional
+zstyle ':llm-suggestions:' llm-args -o provider '{"order":["fireworks"],"allow_fallbacks":true}' -o reasoning_enabled false
 ```
