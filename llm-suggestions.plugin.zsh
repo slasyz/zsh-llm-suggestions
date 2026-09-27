@@ -1,4 +1,4 @@
-: "${LLM_SUGGESTIONS_MODEL:=gpt-5.4}"
+: "${LLM_SUGGESTIONS_MODEL:=gpt-6-sol}"
 : "${LLM_SUGGESTIONS_BINDKEY:=^X^X}"  # Ctrl-X Ctrl-X as a default
 typeset -ga LLM_SUGGESTIONS_LLM_ARGS
 LLM_SUGGESTIONS_LLM_ARGS=("${LLM_SUGGESTIONS_LLM_ARGS[@]}")
@@ -21,9 +21,9 @@ _llm_suggestions_system_prompt() {
     fi
 
     print -r -- "Respond with several choices that can be ran directly on command line. Important: it will be executed via zsh on $os.
-        No formatting, no numbers, every line — separate command.
-        If user asks specific number of choices, do as they say. Otherwise, write reasonable amount, for example, 5.
-        Prefer simplest and most straightforwards solutions, use Python or other languages only if they fit better than standard shell tools."
+No formatting, no numbers, every line — separate command.
+If user asks specific number of choices, do as they say. Otherwise, write reasonable amount, for example, 5.
+Prefer simplest and most straightforwards solutions, use Python or other languages only if they fit better than standard shell tools."
 }
 
 _llm_cmd_pick_widget() {
@@ -82,7 +82,7 @@ _llm_cmd_pick_widget() {
             --layout=reverse \
             --border \
             < <(
-                llm -m "$LLM_SUGGESTIONS_MODEL" -s "$system_prompt" \
+                llm -R -m "$LLM_SUGGESTIONS_MODEL" -s "$system_prompt" \
                     "${LLM_SUGGESTIONS_LLM_ARGS[@]}" \
                     "$input" \
                     2>"$llm_stderr"
@@ -118,6 +118,8 @@ _llm_cmd_pick_widget() {
 zsh-llm-suggestions-debug() {
     emulate -L zsh
     setopt localoptions pipefail
+    zmodload zsh/datetime
+    local start_time=$EPOCHREALTIME
 
     if (( ! $+commands[llm] )); then
         print -u2 -- "llm not found in PATH"
@@ -152,10 +154,13 @@ zsh-llm-suggestions-debug() {
         return 2
     fi
 
-    [[ -n "${model//[[:space:]]/}" ]] || model="gpt-5.4"
+    [[ -n "${model//[[:space:]]/}" ]] || model="gpt-6-sol"
     llm -m "$model" -s "$(_llm_suggestions_system_prompt)" \
         "${LLM_SUGGESTIONS_LLM_ARGS[@]}" \
         "$input"
+    local llm_status=$?
+    print -u2 -f "\nTotal time: %.2f seconds\n" "$(( EPOCHREALTIME - start_time ))"
+    return $llm_status
 }
 
 zle -N llm-cmd-pick _llm_cmd_pick_widget

@@ -12,14 +12,18 @@ Tiny Zsh plugin that opens a prompt, asks an LLM for shell command suggestions, 
 - **fzf**: https://github.com/junegunn/fzf
 
 Install [gum](https://github.com/charmbracelet/gum) and [fzf](https://github.com/junegunn/fzf), for example, on macOS you can do this:
-```shell
+```sh
 brew install gum fzf
 ```
 
-Also install [llm](https://llm.datasette.io/) using your preferred method as described in [docs](https://llm.datasette.io/en/stable/setup.html).
+Also install [llm](https://llm.datasette.io/) using your preferred method as described in [docs](https://llm.datasette.io/en/stable/setup.html), for example:
+```sh
+uv tool install llm
+homebrew install llm
+```
 
 Verify that they are available in your PATH:
-```shell
+```sh
 gum -v
 fzf --version
 llm --version
@@ -28,30 +32,36 @@ llm --version
 ### Configure LLM provider (cloud or local)
 
 To use OpenAI, just set the API key for llm and verify it, for example, like this:
-```shell
+```sh
 llm keys set openai
-llm -m gpt-5.4 "write me a poem about cats"
+llm -m gpt-6-sol "write me a poem about cats"
+```
+
+For OpenRouter, use this:
+```sh
+llm install llm-openrouter
+llm keys set openrouter
 ```
 
 If you want to use a different provider, model, or even a local one, configure `llm` accordingly (for example, by adding a custom model in [`extra-openai-models.yaml`](https://llm.datasette.io/en/stable/other-models.html) or installing a plugin from the [plugin directory](https://llm.datasette.io/en/stable/plugins/directory.html)), then set the model name as described in the [Configuration](#configuration) section below.
 
-In this case, make sure your model returns output in the correct format (one command per line, no formatting). To check this, run the debug command (the optional `-m` flag passes the model name to `llm` as-is) to see what it returns with the default system prompt (this command appears only after you install the plugin):
-```shell
-zsh-llm-suggestions-debug -m openrouter/google/gemini-3-flash-preview "show datetime with ms"
+In this case, make sure your model returns output in the correct format (one command per line, no formatting). To check this, run the debug command (the optional `-m` flag passes the model name to `llm` as-is) to see what it returns with the default system prompt:
+```sh
+zsh-llm-suggestions-debug -m openrouter/google/gemini-3.8-flash "show datetime with ms"
 ```
 
 ## Install
 
 ### oh-my-zsh
 
-```shell
+```sh
 git clone https://github.com/slasyz/zsh-llm-suggestions \
   ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/llm-suggestions
 ```
 
 Then add it to your plugins list in `~/.zshrc`:
 
-```shell
+```sh
 plugins=(... llm-suggestions)
 ```
 
@@ -59,13 +69,13 @@ plugins=(... llm-suggestions)
 
 Add this to your `~/.zimrc`:
 
-```shell
+```sh
 zmodule slasyz/zsh-llm-suggestions --name llm-suggestions
 ```
 
 Then rebuild:
 
-```shell
+```sh
 zimfw install
 ```
 
@@ -73,7 +83,7 @@ zimfw install
 
 Add this to your `~/.zshrc`:
 
-```shell
+```sh
 zinit light slasyz/zsh-llm-suggestions
 ```
 
@@ -81,7 +91,7 @@ zinit light slasyz/zsh-llm-suggestions
 
 Add this to your `~/.zshrc`:
 
-```shell
+```sh
 antigen bundle slasyz/zsh-llm-suggestions
 antigen apply
 ```
@@ -90,7 +100,7 @@ antigen apply
 
 Clone the repo and source the plugin file from `~/.zshrc`:
 
-```shell
+```sh
 git clone https://github.com/slasyz/zsh-llm-suggestions ~/.zsh-llm-suggestions
 source ~/.zsh-llm-suggestions/llm-suggestions.plugin.zsh
 ```
@@ -107,12 +117,12 @@ Add this before loading the plugin.
 
 ### Shell variables
 
-```shell
-export LLM_SUGGESTIONS_MODEL="gpt-5.4"
+```sh
+export LLM_SUGGESTIONS_MODEL="gpt-6-sol"
 export LLM_SUGGESTIONS_BINDKEY="^X^X"
 
 # Optional: If you want to pass custom options to the `llm` command, 
-# for example, to select a preferred provider:
+# for example, to select a preferred provider when calling OpenRouter:
 typeset -ga LLM_SUGGESTIONS_LLM_ARGS=(
   -o provider '{"order":["fireworks"],"allow_fallbacks":true}'
   -o reasoning_enabled false
@@ -123,8 +133,8 @@ typeset -ga LLM_SUGGESTIONS_LLM_ARGS=(
 
 ### zstyle
 
-```shell
-zstyle ':llm-suggestions:' model gpt-5.4
+```sh
+zstyle ':llm-suggestions:' model gpt-6-sol
 zstyle ':llm-suggestions:' bindkey '^X^X'
 
 # Optional
