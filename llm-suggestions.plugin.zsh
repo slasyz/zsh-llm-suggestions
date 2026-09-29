@@ -1,14 +1,31 @@
-: "${LLM_SUGGESTIONS_MODEL:=gpt-6-sol}"
+# Single source of truth for the default model.
+typeset -g LLM_SUGGESTIONS_DEFAULT_MODEL="gpt-6-sol"
+
+: "${LLM_SUGGESTIONS_MODEL:=$LLM_SUGGESTIONS_DEFAULT_MODEL}"
 : "${LLM_SUGGESTIONS_BINDKEY:=^X^X}"  # Ctrl-X Ctrl-X as a default
 typeset -ga LLM_SUGGESTIONS_LLM_ARGS
 LLM_SUGGESTIONS_LLM_ARGS=("${LLM_SUGGESTIONS_LLM_ARGS[@]}")
 
-zstyle -s ':llm-suggestions:' model LLM_SUGGESTIONS_MODEL
-zstyle -s ':llm-suggestions:' bindkey LLM_SUGGESTIONS_BINDKEY
-zstyle -a ':llm-suggestions:' llm-args LLM_SUGGESTIONS_LLM_ARGS
+# Precedence: zstyle > existing env/shell variable > default.
+# `zstyle -s`/`-a` blank the target parameter when the style is undefined, so
+# read into a temp and only overwrite the real variable on success.
+typeset _llm_suggestions_style
+if zstyle -s ':llm-suggestions:' model _llm_suggestions_style; then
+    LLM_SUGGESTIONS_MODEL="$_llm_suggestions_style"
+fi
+if zstyle -s ':llm-suggestions:' bindkey _llm_suggestions_style; then
+    LLM_SUGGESTIONS_BINDKEY="$_llm_suggestions_style"
+fi
+unset _llm_suggestions_style
+
+typeset -a _llm_suggestions_style_args
+if zstyle -a ':llm-suggestions:' llm-args _llm_suggestions_style_args; then
+    LLM_SUGGESTIONS_LLM_ARGS=("${_llm_suggestions_style_args[@]}")
+fi
+unset _llm_suggestions_style_args
 
 # Guard against empty style/env values so bindkey always receives a sequence.
-[[ -n "${LLM_SUGGESTIONS_MODEL//[[:space:]]/}" ]] || LLM_SUGGESTIONS_MODEL="gpt-5.2"
+[[ -n "${LLM_SUGGESTIONS_MODEL//[[:space:]]/}" ]] || LLM_SUGGESTIONS_MODEL="$LLM_SUGGESTIONS_DEFAULT_MODEL"
 [[ -n "${LLM_SUGGESTIONS_BINDKEY//[[:space:]]/}" ]] || LLM_SUGGESTIONS_BINDKEY="^X^X"
 
 _llm_suggestions_system_prompt() {
@@ -154,8 +171,9 @@ zsh-llm-suggestions-debug() {
         return 2
     fi
 
-    [[ -n "${model//[[:space:]]/}" ]] || model="gpt-6-sol"
-    llm -m "$model" -s "$(_llm_suggestions_system_prompt)" \
+    [[ -n "${model//[[:space:]]/}" ]] || model="$LLM_SUGGESTIONS_DEFAULT_MODEL"
+    # Same flags as the widget so debug output reflects what the widget runs.
+    llm -R -m "$model" -s "$(_llm_suggestions_system_prompt)" \
         "${LLM_SUGGESTIONS_LLM_ARGS[@]}" \
         "$input"
     local llm_status=$?
