@@ -113,7 +113,19 @@ Press it in your shell, type what you want, pick a generated command, then run/e
 
 ## Configuration
 
-Add this before loading the plugin.
+Add this **before** the plugin is loaded. The settings are read once, when the
+plugin is sourced, so anything set later in your config is ignored.
+
+With oh-my-zsh that means above the `source $ZSH/oh-my-zsh.sh` line in your
+`~/.zshrc` — putting the settings further down the file, after that line, is a
+silent no-op:
+
+```sh
+# ... your LLM_SUGGESTIONS_* settings or zstyle calls go here ...
+
+plugins=(... llm-suggestions)
+source $ZSH/oh-my-zsh.sh
+```
 
 ### Shell variables
 
@@ -140,3 +152,6 @@ zstyle ':llm-suggestions:' bindkey '^X^X'
 # Optional
 zstyle ':llm-suggestions:' llm-args -o provider '{"order":["fireworks"],"allow_fallbacks":true}' -o reasoning_enabled false
 ```
+
+If a setting is configured both ways, the `zstyle` wins; otherwise the shell
+variable is used, and failing that the built-in default.
